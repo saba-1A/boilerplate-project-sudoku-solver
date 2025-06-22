@@ -17,12 +17,14 @@ module.exports = function (app) {
       return res.json({ error: 'Invalid value' });
 
     const validation = solver.validate(puzzle);
+    if (validation === "invalid length")
+      return res.json({ error: 'Expected puzzle to be 81 characters long' });
+    if (validation === "invalid characters")
+      return res.json({ error: 'Invalid characters in puzzle' });
     if (validation !== "valid")
-      return res.json({ error: validation === "invalid length"
-        ? 'Expected puzzle to be 81 characters long'
-        : 'Invalid characters in puzzle' });
+      return res.json({ error: 'Invalid puzzle' });
 
-    const row = coordinate[0];
+    const row = coordinate[0].toUpperCase(); // fix: always uppercase
     const col = coordinate[1];
 
     const conflicts = [];
@@ -40,10 +42,12 @@ module.exports = function (app) {
     if (!puzzle) return res.json({ error: 'Required field missing' });
 
     const validation = solver.validate(puzzle);
+    if (validation === "invalid length")
+      return res.json({ error: 'Expected puzzle to be 81 characters long' });
+    if (validation === "invalid characters")
+      return res.json({ error: 'Invalid characters in puzzle' });
     if (validation !== "valid")
-      return res.json({ error: validation === "invalid length"
-        ? 'Expected puzzle to be 81 characters long'
-        : 'Invalid characters in puzzle' });
+      return res.json({ error: 'Invalid puzzle' });
 
     const solution = solver.solve(puzzle);
     if (solution === "unsolvable")
