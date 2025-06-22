@@ -1,80 +1,76 @@
+// index.js
+
 const textArea = document.getElementById("text-input");
 const coordInput = document.getElementById("coord");
 const valInput = document.getElementById("val");
-const errorMsg = document.getElementById("error");
+const errorMsg = document.getElementById("error-msg"); // matches your HTML's error-msg div
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Example starting puzzle string
   textArea.value =
     "..9..5.1.85.4....2432......1...69.83.9.....6.62.71...9......1945....4.37.4.3..6..";
-  fillpuzzle(textArea.value);
+  fillPuzzle(textArea.value);
 });
 
 textArea.addEventListener("input", () => {
-  if (textArea.value.length > 81) {
-    errorMsg.innerHTML = `<code>{"error": "Puzzle exceeds 81 characters"}</code>`;
-    return;
-  }
-  fillpuzzle(textArea.value);
+  fillPuzzle(textArea.value);
 });
 
-function fillpuzzle(data) {
-  for (let i = 0; i < 81; i++) {
-    let rowLetter = String.fromCharCode("A".charCodeAt(0) + Math.floor(i / 9));
-    let col = (i % 9) + 1;
-    let cell = document.getElementsByClassName(rowLetter + col)[0];
-    if (cell) {
-      cell.innerText = (!data[i] || data[i] === ".") ? " " : data[i];
-    }
+function fillPuzzle(data) {
+  // Only fill first 81 cells
+  const len = Math.min(data.length, 81);
+  for (let i = 0; i < len; i++) {
+    const rowLetter = String.fromCharCode("A".charCodeAt(0) + Math.floor(i / 9));
+    const col = (i % 9) + 1;
+    const cell = document.querySelector(`.${rowLetter}${col}`);
+    if (!cell) continue;
+    cell.textContent = data[i] === "." ? " " : data[i];
   }
 }
 
+// Fetch solution from backend and fill grid
 async function getSolved() {
-  errorMsg.innerHTML = "";
-  const puzzle = textArea.value;
-  if (!puzzle) {
-    errorMsg.innerHTML = `<code>{"error": "Puzzle is required"}</code>`;
-    return;
-  }
-
-  const res = await fetch("/api/solve", {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-type": "application/json"
-    },
-    body: JSON.stringify({ puzzle })
-  });
-
-  const parsed = await res.json();
-  if (parsed.error) {
-    errorMsg.innerHTML = `<code>${JSON.stringify(parsed, null, 2)}</code>`;
-  } else {
-    fillpuzzle(parsed.solution);
+  const payload = { puzzle: textArea.value };
+  try {
+    const res = await fetch("/api/solve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.error) {
+      errorMsg.innerHTML = `<code>${data.error}</code>`;
+      return;
+    }
+    fillPuzzle(data.solution);
+    errorMsg.textContent = ""; // clear errors on success
+  } catch (err) {
+    errorMsg.textContent = "Error communicating with server.";
   }
 }
 
+// Check placement validity
 async function getChecked() {
-  errorMsg.innerHTML = "";
-  const puzzle = textArea.value;
-  const coordinate = coordInput.value.toUpperCase();
-  const value = valInput.value;
-
-  if (!puzzle || !coordinate || !value) {
-    errorMsg.innerHTML = `<code>{"error": "All fields are required"}</code>`;
-    return;
+  const payload = {
+    puzzle: textArea.value,
+    coordinate: coordInput.value.toUpperCase().trim(),
+    value: valInput.value.trim(),
+  };
+  try {
+    const res = await fetch("/api/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (data.error) {
+      errorMsg.innerHTML = `<code>${data.error}</code>`;
+    } else {
+      errorMsg.innerHTML = `<code>${JSON.stringify(data, null, 2)}</code>`;
+    }
+  } catch (err) {
+    errorMsg.textContent = "Error communicating with server.";
   }
-
-  const res = await fetch("/api/check", {
-    method: "POST",
-    headers: {
-      "Accept": "application/json",
-      "Content-type": "application/json"
-    },
-    body: JSON.stringify({ puzzle, coordinate, value })
-  });
-
-  const parsed = await res.json();
-  errorMsg.innerHTML = `<code>${JSON.stringify(parsed, null, 2)}</code>`;
 }
 
 document.getElementById("solve-button").addEventListener("click", getSolved);
