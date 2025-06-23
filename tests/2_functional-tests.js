@@ -126,7 +126,7 @@ suite('Functional Tests', () => {
     .send({
       puzzle: puzzleString,
       coordinate: 'C2',
-      value: '6' // Conflicts with row, column, and region
+      value: '6'  // triggers row, column, and region conflicts
     })
     .end((err, res) => {
       assert.isFalse(res.body.valid);
@@ -134,6 +134,7 @@ suite('Functional Tests', () => {
       done();
     });
 });
+
 
 
   test('Check a puzzle placement with missing required fields', (done) => {
