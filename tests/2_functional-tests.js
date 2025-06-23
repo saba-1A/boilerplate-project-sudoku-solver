@@ -41,7 +41,8 @@ suite('Unit Tests', () => {
   });
 
   test('Invalid column placement', () => {
-    assert.isFalse(solver.checkColPlacement(validString, 'A', '2', '8'));
+    // Updated: 2 is already in column 2, so this should fail
+    assert.isFalse(solver.checkColPlacement(validString, 'A', '2', '2'));
   });
 
   // ✅ Region (3x3 grid) validation
@@ -63,4 +64,3 @@ suite('Unit Tests', () => {
     assert.equal(solver.solve(unsolvable), 'unsolvable');
   });
 });
-
