@@ -125,7 +125,7 @@ suite('Functional Tests', () => {
     .post('/api/check')
     .send({
       puzzle: puzzleString,
-      coordinate: 'C2',
+      coordinate: 'E5',
       value: '6'
     })
     .end((err, res) => {
@@ -134,6 +134,7 @@ suite('Functional Tests', () => {
       done();
     });
 });
+
 
 
   test('Check a puzzle placement with missing required fields', (done) => {
