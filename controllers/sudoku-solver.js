@@ -37,18 +37,14 @@ class SudokuSolver {
   }
 
   checkColPlacement(puzzle, row, column, value) {
-  const colIndex = column - 1;
-  const currentIndex = this.coordToIndex(row, column);
-
-  for (let i = 0; i < 9; i++) {
-    const index = i * 9 + colIndex;
-    if (puzzle[index] === value && index !== currentIndex) {
-      return false;
+    const colIndex = column - 1;
+    const currentIndex = this.coordToIndex(row, column);
+    for (let i = 0; i < 9; i++) {
+      const index = i * 9 + colIndex;
+      if (puzzle[index] === value && index !== currentIndex) return false;
     }
+    return true;
   }
-  return true;
-}
-
 
   checkRegionPlacement(puzzle, row, column, value) {
     const index = this.coordToIndex(row, column);
@@ -68,12 +64,12 @@ class SudokuSolver {
     if (this.validate(puzzle) !== "valid") return "unsolvable";
 
     const solveRecursive = (board) => {
-      const index = board.indexOf('.');
+      const index = board.indexOf(".");
       if (index === -1) return board;
 
       const row = Math.floor(index / 9);
       const col = index % 9;
-      const rowChar = 'ABCDEFGHI'[row];
+      const rowChar = "ABCDEFGHI"[row];
 
       for (let num = 1; num <= 9; num++) {
         const val = String(num);
@@ -82,7 +78,8 @@ class SudokuSolver {
           this.checkColPlacement(board, rowChar, col + 1, val) &&
           this.checkRegionPlacement(board, rowChar, col + 1, val)
         ) {
-          const newBoard = board.slice(0, index) + val + board.slice(index + 1);
+          const newBoard =
+            board.slice(0, index) + val + board.slice(index + 1);
           const result = solveRecursive(newBoard);
           if (result) return result;
         }
