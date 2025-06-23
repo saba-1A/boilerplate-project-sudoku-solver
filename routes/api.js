@@ -7,24 +7,27 @@ module.exports = function (app) {
   app.post('/api/check', (req, res) => {
     const { puzzle, coordinate, value } = req.body;
 
-    if (!puzzle || !coordinate || !value)
+    if (!puzzle || !coordinate || !value) {
       return res.json({ error: 'Required field(s) missing' });
+    }
 
-    if (!/^[A-I][1-9]$/i.test(coordinate))
+    if (!/^[A-I][1-9]$/i.test(coordinate)) {
       return res.json({ error: 'Invalid coordinate' });
+    }
 
-    if (!/^[1-9]$/.test(value))
+    if (!/^[1-9]$/.test(value)) {
       return res.json({ error: 'Invalid value' });
+    }
 
     const validation = solver.validate(puzzle);
-    if (validation === "invalid length")
+    if (validation === "invalid length") {
       return res.json({ error: 'Expected puzzle to be 81 characters long' });
-    if (validation === "invalid characters")
+    }
+    if (validation === "invalid characters") {
       return res.json({ error: 'Invalid characters in puzzle' });
-    if (validation !== "valid")
-      return res.json({ error: 'Invalid puzzle' });
+    }
 
-    const row = coordinate[0].toUpperCase(); // fix: always uppercase
+    const row = coordinate[0].toUpperCase();
     const col = coordinate[1];
 
     const conflicts = [];
@@ -39,19 +42,22 @@ module.exports = function (app) {
   app.post('/api/solve', (req, res) => {
     const { puzzle } = req.body;
 
-    if (!puzzle) return res.json({ error: 'Required field missing' });
+    if (!puzzle) {
+      return res.json({ error: 'Required field missing' });
+    }
 
     const validation = solver.validate(puzzle);
-    if (validation === "invalid length")
+    if (validation === "invalid length") {
       return res.json({ error: 'Expected puzzle to be 81 characters long' });
-    if (validation === "invalid characters")
+    }
+    if (validation === "invalid characters") {
       return res.json({ error: 'Invalid characters in puzzle' });
-    if (validation !== "valid")
-      return res.json({ error: 'Invalid puzzle' });
+    }
 
     const solution = solver.solve(puzzle);
-    if (solution === "unsolvable")
+    if (solution === "unsolvable") {
       return res.json({ error: 'Puzzle cannot be solved' });
+    }
 
     return res.json({ solution });
   });
