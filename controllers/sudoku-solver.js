@@ -27,38 +27,36 @@ class SudokuSolver {
   }
 
   checkRowPlacement(puzzle, row, column, value) {
-    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
-    const currentIndex = rowIndex * 9 + (column - 1);
-    for (let i = 0; i < 9; i++) {
-      const index = rowIndex * 9 + i;
-      if (puzzle[index] === value && index !== currentIndex) return false;
-    }
-    return true;
+  const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+  for (let i = 0; i < 9; i++) {
+    const index = rowIndex * 9 + i;
+    if (puzzle[index] === value) return false;
   }
+  return true;
+}
 
   checkColPlacement(puzzle, row, column, value) {
-    const colIndex = column - 1;
-    const currentIndex = this.coordToIndex(row, column);
-    for (let i = 0; i < 9; i++) {
-      const index = i * 9 + colIndex;
-      if (puzzle[index] === value && index !== currentIndex) return false;
-    }
-    return true;
+  const colIndex = column - 1;
+  for (let i = 0; i < 9; i++) {
+    const index = i * 9 + colIndex;
+    if (puzzle[index] === value) return false;
   }
+  return true;
+}
 
   checkRegionPlacement(puzzle, row, column, value) {
-    const index = this.coordToIndex(row, column);
-    const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
-    const startCol = Math.floor(this.findColNumber(index) / 3) * 3;
+  const index = this.coordToIndex(row, column);
+  const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
+  const startCol = Math.floor(this.findColNumber(index) / 3) * 3;
 
-    for (let r = 0; r < 3; r++) {
-      for (let c = 0; c < 3; c++) {
-        const i = (startRow + r) * 9 + (startCol + c);
-        if (puzzle[i] === value && i !== index) return false;
-      }
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      const i = (startRow + r) * 9 + (startCol + c);
+      if (puzzle[i] === value) return false;
     }
-    return true;
   }
+  return true;
+}
 
   solve(puzzle) {
     if (this.validate(puzzle) !== "valid") return "unsolvable";
