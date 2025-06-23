@@ -119,14 +119,14 @@ suite('Functional Tests', () => {
       });
   });
 
-  test('Check a puzzle placement with all conflicts', (done) => {
+ test('Check a puzzle placement with all conflicts', (done) => {
   chai
     .request(server)
     .post('/api/check')
     .send({
       puzzle: puzzleString,
       coordinate: 'C2',
-      value: '6'  // triggers row, column, and region conflicts
+      value: '6'
     })
     .end((err, res) => {
       assert.isFalse(res.body.valid);
@@ -134,7 +134,6 @@ suite('Functional Tests', () => {
       done();
     });
 });
-
 
 
   test('Check a puzzle placement with missing required fields', (done) => {
