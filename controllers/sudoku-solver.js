@@ -28,23 +28,21 @@ class SudokuSolver {
 
   checkRowPlacement(puzzle, row, column, value) {
     const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+    const currentIndex = rowIndex * 9 + (column - 1);
     for (let i = 0; i < 9; i++) {
       const index = rowIndex * 9 + i;
-      if (puzzle[index] === value && i !== column - 1) return false;
+      if (puzzle[index] === value && index !== currentIndex) return false;
     }
     return true;
   }
 
-  // ✅ FIXED: skip the current cell when checking column
   checkColPlacement(puzzle, row, column, value) {
     const colIndex = column - 1;
     const currentIndex = this.coordToIndex(row, column);
-
     for (let i = 0; i < 9; i++) {
       const index = i * 9 + colIndex;
       if (puzzle[index] === value && index !== currentIndex) return false;
     }
-
     return true;
   }
 
