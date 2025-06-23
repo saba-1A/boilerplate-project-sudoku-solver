@@ -1,9 +1,7 @@
-// sudoku-solver.js
 class SudokuSolver {
   validate(puzzleString) {
-    if (!puzzleString) return "Required field missing";
+    if (/[^1-9.]/.test(puzzleString)) return "invalid characters";
     if (puzzleString.length !== 81) return "invalid length";
-    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters";
     return "valid";
   }
 
@@ -38,10 +36,10 @@ class SudokuSolver {
 
   checkColPlacement(puzzle, row, column, value) {
     const colIndex = column - 1;
+    const checkIndex = this.coordToIndex(row, column);
     for (let i = 0; i < 9; i++) {
       const index = i * 9 + colIndex;
-      const coordIndex = this.coordToIndex(row, column);
-      if (puzzle[index] === value && index !== coordIndex) return false;
+      if (puzzle[index] === value && index !== checkIndex) return false;
     }
     return true;
   }
@@ -61,11 +59,12 @@ class SudokuSolver {
   }
 
   solve(puzzle) {
-    if (this.validate(puzzle) !== "valid") return "invalid";
+    const validation = this.validate(puzzle);
+    if (validation !== "valid") return "unsolvable";
 
     const solveRecursive = (board) => {
       const index = board.indexOf('.');
-      if (index === -1) return board; // solved
+      if (index === -1) return board;
 
       const row = Math.floor(index / 9);
       const col = index % 9;
@@ -84,7 +83,7 @@ class SudokuSolver {
         }
       }
 
-      return false; // backtrack
+      return false;
     };
 
     const result = solveRecursive(puzzle);
