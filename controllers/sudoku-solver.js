@@ -42,14 +42,14 @@ class SudokuSolver {
 
   for (let i = 0; i < 9; i++) {
     const index = i * 9 + colIndex;
-    if (puzzle[index] === value && index !== currentIndex) {
+    if (index !== currentIndex && puzzle[index] === value) {
       return false;
     }
   }
 
   return true;
 }
-  
+
   checkRegionPlacement(puzzle, row, column, value) {
     const index = this.coordToIndex(row, column);
     const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
