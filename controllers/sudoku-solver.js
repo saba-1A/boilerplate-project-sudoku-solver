@@ -41,9 +41,7 @@ class SudokuSolver {
     const currentIndex = this.coordToIndex(row, column);
     for (let i = 0; i < 9; i++) {
       const index = i * 9 + colIndex;
-      if (index !== currentIndex && puzzle[index] === value) {
-        return false;
-      }
+      if (puzzle[index] === value && index !== currentIndex) return false;
     }
     return true;
   }
