@@ -57,7 +57,8 @@ suite('Functional Tests', () => {
   });
 
   test('Solve a puzzle that cannot be solved', (done) => {
-    const badPuzzle = puzzleString.slice(0, 80) + '1'; // force unsolvable
+    // Force a clear conflict (duplicate value in same row)
+    const badPuzzle = puzzleString.slice(0, 1) + '1' + puzzleString.slice(2);
     chai
       .request(server)
       .post('/api/solve')
@@ -86,13 +87,14 @@ suite('Functional Tests', () => {
   });
 
   test('Check a puzzle placement with single conflict', (done) => {
+    // 6 is already in row A, but not column or region
     chai
       .request(server)
       .post('/api/check')
       .send({
         puzzle: puzzleString,
         coordinate: 'A2',
-        value: '5'
+        value: '6'
       })
       .end((err, res) => {
         assert.isFalse(res.body.valid);
@@ -102,6 +104,7 @@ suite('Functional Tests', () => {
   });
 
   test('Check a puzzle placement with multiple conflicts', (done) => {
+    // 2 is already in both row and column
     chai
       .request(server)
       .post('/api/check')
@@ -118,13 +121,14 @@ suite('Functional Tests', () => {
   });
 
   test('Check a puzzle placement with all conflicts', (done) => {
+    // 5 is in row, column, and region
     chai
       .request(server)
       .post('/api/check')
       .send({
         puzzle: puzzleString,
         coordinate: 'A2',
-        value: '1'
+        value: '5'
       })
       .end((err, res) => {
         assert.isFalse(res.body.valid);
