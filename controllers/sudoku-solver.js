@@ -1,123 +1,95 @@
+// sudoku-solver.js
 class SudokuSolver {
-
   validate(puzzleString) {
-    if (puzzleString.length !== 81) {
-      return "invalid length"
-    }
-    const regex = /^[0-9.]{81}$/g
-    return regex.test(puzzleString) ? "valid" : "invalid characters"
+    if (!puzzleString) return "Required field missing";
+    if (puzzleString.length !== 81) return "invalid length";
+    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters";
+    return "valid";
   }
 
   coordToIndex(row, column) {
-    const coordLetterIndexRef = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
-    const coordLetterIndex = coordLetterIndexRef.indexOf(row.toUpperCase())
-    const coordIndex = coordLetterIndex * 9 + (Number(column) - 1)
-    return coordIndex
+    const rows = "ABCDEFGHI";
+    const rowIndex = rows.indexOf(row.toUpperCase());
+    return rowIndex * 9 + (column - 1);
   }
 
-  checkRowPlacement(puzzleString, row, column, value) {
-    const placementIndex = this.coordToIndex(row, column)
-    const placementRowNum = this.findRowNumber(placementIndex)
-    for (let n = 0; n < puzzleString.length; n++) {
-      if (this.findRowNumber(n) === placementRowNum && n !== placementIndex && puzzleString[n] === value) {
-        return false
-      }
-    }
-    return true
-  }
-
-  checkColPlacement(puzzleString, row, column, value) {
-    const placementIndex = this.coordToIndex(row, column)
-    const placementColNum = this.findColNumber(placementIndex)
-    for (let n = 0; n < puzzleString.length; n++) {
-      if (this.findColNumber(n) === placementColNum && n !== placementIndex && puzzleString[n] === value) {
-        return false
-      }
-    }
-    return true
-  }
-
-  checkRegionPlacement(puzzleString, row, column, value) {
-    const placementIndex = this.coordToIndex(row, column)
-    const placementGridNum = this.findGridNumber(placementIndex)
-    for (let n = 0; n < puzzleString.length; n++) {
-      if (this.findGridNumber(n) === placementGridNum && n !== placementIndex && puzzleString[n] === value) {
-        return false
-      }
-    }
-    return true
-  }
-
-  solve(input) {
-    let possibilityArray = []
-    for (let n = 0; n < input.length; n++) {
-      if (input[n] === ".") {
-        possibilityArray = [...possibilityArray, [1, 2, 3, 4, 5, 6, 7, 8, 9]]
-      } else {
-        possibilityArray = [...possibilityArray, [Number(input[n])]]
-      }
-    }
-
-    for (let n = 0; n < possibilityArray.length; n++) {
-      if (possibilityArray[n].length > 1) {
-        for (let m = 0; m < possibilityArray.length; m++) {
-          if (this.findColNumber(m) === this.findColNumber(n) && possibilityArray[m].length === 1 && m !== n) {
-            possibilityArray[n] = possibilityArray[n].filter(num => num != possibilityArray[m][0])
-          }
-        }
-      }
-    }
-
-    for (let n = 0; n < possibilityArray.length; n++) {
-      if (possibilityArray[n].length > 1) {
-        for (let m = 0; m < possibilityArray.length; m++) {
-          if (this.findRowNumber(m) === this.findRowNumber(n) && possibilityArray[m].length === 1 && m !== n) {
-            possibilityArray[n] = possibilityArray[n].filter(num => num !== possibilityArray[m][0])
-          }
-        }
-      }
-    }
-
-    for (let n = 0; n < possibilityArray.length; n++) {
-      if (possibilityArray[n].length > 1) {
-        for (let m = 0; m < possibilityArray.length; m++) {
-          if (this.findGridNumber(m) === this.findGridNumber(n) && possibilityArray[m].length === 1 && m !== n) {
-            possibilityArray[n] = possibilityArray[n].filter(num => num !== possibilityArray[m][0])
-          }
-        }
-      }
-    }
-
-    if (possibilityArray.flat().length > 81) {
-      const possibilityString = possibilityArray.map(num => num.length === 1 ? num : ".").flat().join("")
-      if (possibilityString === input) {
-        return "unsolvable"
-      }
-      return this.solve(possibilityString)
-    }
-
-    const solution = possibilityArray.map(num => num.length === 1 ? num : ".").flat().join("")
-    if (solution.replace(/\./g, "").length < 81) {
-      return "unsolvable"
-    }
-    return solution
-  }
-
-  // 🔧 FIXED: Utility functions that were previously missing
   findRowNumber(index) {
-    return Math.floor(index / 9)
+    return Math.floor(index / 9);
   }
 
   findColNumber(index) {
-    return index % 9
+    return index % 9;
   }
 
   findGridNumber(index) {
-    const row = this.findRowNumber(index)
-    const col = this.findColNumber(index)
-    return Math.floor(row / 3) * 3 + Math.floor(col / 3)
+    const row = this.findRowNumber(index);
+    const col = this.findColNumber(index);
+    return Math.floor(row / 3) * 3 + Math.floor(col / 3);
   }
 
+  checkRowPlacement(puzzle, row, column, value) {
+    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+    for (let i = 0; i < 9; i++) {
+      const index = rowIndex * 9 + i;
+      if (puzzle[index] === value && i !== column - 1) return false;
+    }
+    return true;
+  }
+
+  checkColPlacement(puzzle, row, column, value) {
+    const colIndex = column - 1;
+    for (let i = 0; i < 9; i++) {
+      const index = i * 9 + colIndex;
+      const coordIndex = this.coordToIndex(row, column);
+      if (puzzle[index] === value && index !== coordIndex) return false;
+    }
+    return true;
+  }
+
+  checkRegionPlacement(puzzle, row, column, value) {
+    const index = this.coordToIndex(row, column);
+    const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
+    const startCol = Math.floor(this.findColNumber(index) / 3) * 3;
+
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const i = (startRow + r) * 9 + (startCol + c);
+        if (puzzle[i] === value && i !== index) return false;
+      }
+    }
+    return true;
+  }
+
+  solve(puzzle) {
+    if (this.validate(puzzle) !== "valid") return "invalid";
+
+    const solveRecursive = (board) => {
+      const index = board.indexOf('.');
+      if (index === -1) return board; // solved
+
+      const row = Math.floor(index / 9);
+      const col = index % 9;
+      const rowChar = 'ABCDEFGHI'[row];
+
+      for (let num = 1; num <= 9; num++) {
+        const val = String(num);
+        if (
+          this.checkRowPlacement(board, rowChar, col + 1, val) &&
+          this.checkColPlacement(board, rowChar, col + 1, val) &&
+          this.checkRegionPlacement(board, rowChar, col + 1, val)
+        ) {
+          const newBoard = board.slice(0, index) + val + board.slice(index + 1);
+          const result = solveRecursive(newBoard);
+          if (result) return result;
+        }
+      }
+
+      return false; // backtrack
+    };
+
+    const result = solveRecursive(puzzle);
+    return result || "unsolvable";
+  }
 }
 
 module.exports = SudokuSolver;
