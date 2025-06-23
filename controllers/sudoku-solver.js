@@ -37,12 +37,12 @@ class SudokuSolver {
 
   checkColPlacement(puzzle, row, column, value) {
   const colIndex = column - 1;
-  const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
-  const currentIndex = rowIndex * 9 + colIndex;
 
   for (let i = 0; i < 9; i++) {
     const index = i * 9 + colIndex;
-    if (index !== currentIndex && puzzle[index] === value) {
+
+    // Skip checking the current cell itself (only if it's already filled)
+    if (puzzle[index] === value) {
       return false;
     }
   }
