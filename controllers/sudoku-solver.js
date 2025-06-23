@@ -36,17 +36,20 @@ class SudokuSolver {
   }
 
   checkColPlacement(puzzle, row, column, value) {
-    const colIndex = column - 1;
-    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
-    const currentIndex = rowIndex * 9 + colIndex;
+  const colIndex = column - 1;
+  const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+  const currentIndex = rowIndex * 9 + colIndex;
 
-    for (let i = 0; i < 9; i++) {
-      const index = i * 9 + colIndex;
-      if (puzzle[index] === value && index !== currentIndex) return false;
+  for (let i = 0; i < 9; i++) {
+    const index = i * 9 + colIndex;
+    if (puzzle[index] === value && index !== currentIndex) {
+      return false;
     }
-    return true;
   }
 
+  return true;
+}
+  
   checkRegionPlacement(puzzle, row, column, value) {
     const index = this.coordToIndex(row, column);
     const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
