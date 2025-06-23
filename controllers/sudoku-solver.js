@@ -1,8 +1,8 @@
 class SudokuSolver {
   validate(puzzleString) {
     if (!puzzleString) return "Required field missing";
+    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters"; // check characters first
     if (puzzleString.length !== 81) return "invalid length";
-    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters";
     return "valid";
   }
 
@@ -35,14 +35,14 @@ class SudokuSolver {
     return true;
   }
 
-  // ✅ FIXED VERSION
   checkColPlacement(puzzle, row, column, value) {
-    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
     const colIndex = column - 1;
+    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+    const currentIndex = rowIndex * 9 + colIndex;
 
     for (let i = 0; i < 9; i++) {
       const index = i * 9 + colIndex;
-      if (puzzle[index] === value && i !== rowIndex) return false;
+      if (puzzle[index] === value && index !== currentIndex) return false;
     }
     return true;
   }
@@ -62,11 +62,11 @@ class SudokuSolver {
   }
 
   solve(puzzle) {
-    if (this.validate(puzzle) !== "valid") return "invalid";
+    if (this.validate(puzzle) !== "valid") return "unsolvable";
 
     const solveRecursive = (board) => {
       const index = board.indexOf('.');
-      if (index === -1) return board;
+      if (index === -1) return board; // fully solved
 
       const row = Math.floor(index / 9);
       const col = index % 9;
@@ -85,7 +85,7 @@ class SudokuSolver {
         }
       }
 
-      return false;
+      return false; // unsolvable
     };
 
     const result = solveRecursive(puzzle);
