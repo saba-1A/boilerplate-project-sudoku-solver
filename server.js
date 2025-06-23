@@ -1,7 +1,9 @@
+'use strict';
 require('dotenv').config();
+
 const express = require('express');
-const expect = require('chai').expect;
 const cors = require('cors');
+const expect = require('chai').expect;
 
 const fccTestingRoutes = require('./routes/fcctesting.js');
 const apiRoutes = require('./routes/api.js');
@@ -9,50 +11,50 @@ const runner = require('./test-runner');
 
 const app = express();
 
-// Middleware
+// === Middleware ===
 app.use('/public', express.static(process.cwd() + '/public'));
-app.use(cors({ origin: '*' })); // For FCC testing only
+app.use(cors({ origin: '*' })); // Allow CORS for FCC tests
 
-// ✅ Use express's built-in body parsing
+// Built-in body parser for POST requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Home Page
-app.route('/')
-  .get((req, res) => {
-    res.sendFile(process.cwd() + '/views/index.html');
-  });
+// === Routes ===
 
-// FCC Testing Routes
-fccTestingRoutes(app);
-
-// Your API Routes
-apiRoutes(app);
-
-// 404 Handler
-app.use((req, res) => {
-  res.status(404)
-    .type('text')
-    .send('Not Found');
+// Home page
+app.route('/').get((req, res) => {
+  res.sendFile(process.cwd() + '/views/index.html');
 });
 
-// Start Server
+// FCC testing routes
+fccTestingRoutes(app);
+
+// Your API routes
+apiRoutes(app);
+
+// 404 Not Found middleware
+app.use((req, res) => {
+  res.status(404).type('text').send('Not Found');
+});
+
+// === Start Server ===
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Listening on port " + PORT);
-  
+  console.log('Listening on port ' + PORT);
+
+  // Run FCC tests after delay if in test mode
   if (process.env.NODE_ENV === 'test') {
     console.log('Running Tests...');
     setTimeout(() => {
       try {
         runner.run();
-      } catch (error) {
+      } catch (err) {
         console.log('Tests are not valid:');
-        console.error(error);
+        console.error(err);
       }
     }, 1500);
   }
 });
 
-module.exports = app; // for testing
+module.exports = app; // for FCC and functional testing
