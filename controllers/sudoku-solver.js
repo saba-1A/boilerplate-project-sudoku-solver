@@ -37,14 +37,18 @@ class SudokuSolver {
   }
 
   checkColPlacement(puzzle, row, column, value) {
-    const colIndex = column - 1;
-    const currentIndex = this.coordToIndex(row, column);
-    for (let i = 0; i < 9; i++) {
-      const index = i * 9 + colIndex;
-      if (puzzle[index] === value && index !== currentIndex) return false;
+  const colIndex = column - 1;
+  const currentIndex = this.coordToIndex(row, column);
+
+  for (let i = 0; i < 9; i++) {
+    const index = i * 9 + colIndex;
+    if (puzzle[index] === value && index !== currentIndex) {
+      return false;
     }
-    return true;
   }
+  return true;
+}
+
 
   checkRegionPlacement(puzzle, row, column, value) {
     const index = this.coordToIndex(row, column);
