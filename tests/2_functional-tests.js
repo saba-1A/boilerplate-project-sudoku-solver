@@ -1,66 +1,192 @@
 const chai = require('chai');
+const chaiHttp = require('chai-http');
 const assert = chai.assert;
-const Solver = require('../controllers/sudoku-solver.js');
+const server = require('../server');
 
-const solver = new Solver();
+chai.use(chaiHttp);
 
-const validString =
-  '1.5..2.84..63.12.7.2..5.....9..1....8.2.3674.3.7.2..9.47...8..1..16....926914.37.';
-const solvedString =
-  '135762984946381257728459613694517832812936745357824196473298561581673429269145378';
+const puzzleString = '1.5..2.84..63.12.7.2..5.....9..1....8.2.3674.3.7.2..9.47...8..1..16....926914.37.';
+const solvedString = '135762984946381257728459613694517832812936745357824196473298561581673429269145378';
 
-suite('Unit Tests', () => {
-  // ✅ Validation
-  test('Handles a valid puzzle string of 81 characters', () => {
-    assert.equal(solver.validate(validString), 'valid');
+suite('Functional Tests', () => {
+  // Solve API tests
+  test('Solve a puzzle with valid puzzle string', (done) => {
+    chai
+      .request(server)
+      .post('/api/solve')
+      .send({ puzzle: puzzleString })
+      .end((err, res) => {
+        assert.equal(res.status, 200);
+        assert.property(res.body, 'solution');
+        assert.equal(res.body.solution, solvedString);
+        done();
+      });
   });
 
-  test('Handles a puzzle string with invalid characters', () => {
-    assert.equal(
-      solver.validate('1.5..2.8A..63.12.7.2..5.....'),
-      'invalid characters'
-    );
+  test('Solve a puzzle with missing puzzle string', (done) => {
+    chai
+      .request(server)
+      .post('/api/solve')
+      .send({})
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Required field missing');
+        done();
+      });
   });
 
-  test('Handles a puzzle string with incorrect length', () => {
-    assert.equal(solver.validate('1.5..2.8'), 'invalid length');
+  test('Solve a puzzle with invalid characters', (done) => {
+    chai
+      .request(server)
+      .post('/api/solve')
+      .send({ puzzle: '1.5..2.84..63.12.7.2..5..abc9..1....8.2.3674.3.7.2..9.47...8..1..16....926914.37.' })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Invalid characters in puzzle');
+        done();
+      });
   });
 
-  // ✅ Row validation
-  test('Valid row placement', () => {
-    assert.isTrue(solver.checkRowPlacement(validString, 'A', '2', '3'));
+  test('Solve a puzzle with incorrect length', (done) => {
+    chai
+      .request(server)
+      .post('/api/solve')
+      .send({ puzzle: '1.5..2.84..63.12.7.2..5..' }) // too short
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Expected puzzle to be 81 characters long');
+        done();
+      });
   });
 
-  test('Invalid row placement', () => {
-    assert.isFalse(solver.checkRowPlacement(validString, 'A', '2', '5'));
+  test('Solve a puzzle that cannot be solved', (done) => {
+    const badPuzzle = puzzleString.slice(0, 80) + '1'; // force unsolvable
+    chai
+      .request(server)
+      .post('/api/solve')
+      .send({ puzzle: badPuzzle })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Puzzle cannot be solved');
+        done();
+      });
   });
 
-  // ✅ Column validation
-  test('Valid column placement', () => {
-    assert.isTrue(solver.checkColPlacement(validString, 'A', '2', '3'));
+  // Check API tests
+  test('Check a puzzle placement with all fields', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'A2',
+        value: '3'
+      })
+      .end((err, res) => {
+        assert.property(res.body, 'valid');
+        assert.isTrue(res.body.valid);
+        done();
+      });
   });
 
-  test('Invalid column placement', () => {
-    // Updated: 2 is already in column 2, so this should fail
-    assert.isFalse(solver.checkColPlacement(validString, 'A', '2', '2'));
+  test('Check a puzzle placement with single conflict', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'A2',
+        value: '5'
+      })
+      .end((err, res) => {
+        assert.isFalse(res.body.valid);
+        assert.deepEqual(res.body.conflict, ['row']);
+        done();
+      });
   });
 
-  // ✅ Region (3x3 grid) validation
-  test('Valid region placement', () => {
-    assert.isTrue(solver.checkRegionPlacement(validString, 'A', '2', '3'));
+  test('Check a puzzle placement with multiple conflicts', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'A2',
+        value: '2'
+      })
+      .end((err, res) => {
+        assert.isFalse(res.body.valid);
+        assert.includeMembers(res.body.conflict, ['row', 'column']);
+        done();
+      });
   });
 
-  test('Invalid region placement', () => {
-    assert.isFalse(solver.checkRegionPlacement(validString, 'A', '2', '6'));
+  test('Check a puzzle placement with all conflicts', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'A2',
+        value: '1'
+      })
+      .end((err, res) => {
+        assert.isFalse(res.body.valid);
+        assert.includeMembers(res.body.conflict, ['row', 'column', 'region']);
+        done();
+      });
   });
 
-  // ✅ Solver
-  test('Solver returns the expected solution for a valid incomplete puzzle', () => {
-    assert.equal(solver.solve(validString), solvedString);
+  test('Check a puzzle placement with missing required fields', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({ puzzle: puzzleString, value: '1' })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Required field(s) missing');
+        done();
+      });
   });
 
-  test('Solver fails on an unsolvable puzzle', () => {
-    const unsolvable = validString.slice(0, 80) + 'X'; // corrupts last char
-    assert.equal(solver.solve(unsolvable), 'unsolvable');
+  test('Check a puzzle placement with invalid characters', (done) => {
+    const puzzle = puzzleString.slice(0, 1) + 'x' + puzzleString.slice(2);
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle,
+        coordinate: 'A2',
+        value: '3'
+      })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Invalid characters in puzzle');
+        done();
+      });
+  });
+
+  test('Check a puzzle placement with invalid coordinate', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'Z9',
+        value: '3'
+      })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Invalid coordinate');
+        done();
+      });
+  });
+
+  test('Check a puzzle placement with invalid value', (done) => {
+    chai
+      .request(server)
+      .post('/api/check')
+      .send({
+        puzzle: puzzleString,
+        coordinate: 'A2',
+        value: '10'
+      })
+      .end((err, res) => {
+        assert.equal(res.body.error, 'Invalid value');
+        done();
+      });
   });
 });
