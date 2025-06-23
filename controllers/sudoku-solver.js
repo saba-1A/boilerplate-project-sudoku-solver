@@ -7,10 +7,11 @@ class SudokuSolver {
   }
 
   coordToIndex(row, column) {
-    const rows = "ABCDEFGHI";
-    const rowIndex = rows.indexOf(row.toUpperCase());
-    return rowIndex * 9 + (column - 1);
-  }
+  const rows = "ABCDEFGHI";
+  const rowIndex = rows.indexOf(row.toUpperCase());
+  return rowIndex * 9 + (parseInt(column) - 1);
+}
+
 
   findRowNumber(index) {
     return Math.floor(index / 9);
@@ -36,13 +37,15 @@ class SudokuSolver {
 }
 
   checkColPlacement(puzzle, row, column, value) {
-  const colIndex = column - 1;
+  const colIndex = parseInt(column) - 1; // 🔥 Make sure column is a number
+  const currentIndex = this.coordToIndex(row, parseInt(column)); // 🔥 Same here
   for (let i = 0; i < 9; i++) {
     const index = i * 9 + colIndex;
-    if (puzzle[index] === value) return false;
+    if (puzzle[index] === value && index !== currentIndex) return false;
   }
   return true;
 }
+
 
   checkRegionPlacement(puzzle, row, column, value) {
   const index = this.coordToIndex(row, column);
