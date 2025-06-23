@@ -1,7 +1,7 @@
 class SudokuSolver {
   validate(puzzleString) {
     if (!puzzleString) return "Required field missing";
-    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters"; // check characters first
+    if (/[^1-9.]/g.test(puzzleString)) return "invalid characters";
     if (puzzleString.length !== 81) return "invalid length";
     return "valid";
   }
@@ -35,20 +35,18 @@ class SudokuSolver {
     return true;
   }
 
+  // ✅ FIXED: skip the current cell when checking column
   checkColPlacement(puzzle, row, column, value) {
-  const colIndex = column - 1;
+    const colIndex = column - 1;
+    const currentIndex = this.coordToIndex(row, column);
 
-  for (let i = 0; i < 9; i++) {
-    const index = i * 9 + colIndex;
-
-    // Skip checking the current cell itself (only if it's already filled)
-    if (puzzle[index] === value) {
-      return false;
+    for (let i = 0; i < 9; i++) {
+      const index = i * 9 + colIndex;
+      if (puzzle[index] === value && index !== currentIndex) return false;
     }
-  }
 
-  return true;
-}
+    return true;
+  }
 
   checkRegionPlacement(puzzle, row, column, value) {
     const index = this.coordToIndex(row, column);
@@ -69,7 +67,7 @@ class SudokuSolver {
 
     const solveRecursive = (board) => {
       const index = board.indexOf('.');
-      if (index === -1) return board; // fully solved
+      if (index === -1) return board;
 
       const row = Math.floor(index / 9);
       const col = index % 9;
@@ -88,7 +86,7 @@ class SudokuSolver {
         }
       }
 
-      return false; // unsolvable
+      return false;
     };
 
     const result = solveRecursive(puzzle);
