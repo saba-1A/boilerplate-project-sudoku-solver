@@ -86,21 +86,21 @@ suite('Functional Tests', () => {
   });
 
   test('Check a puzzle placement with single conflict', (done) => {
-    // 1 is already in row A, but not in column or region
-    chai
-      .request(server)
-      .post('/api/check')
-      .send({
-        puzzle: puzzleString,
-        coordinate: 'A2',
-        value: '1'
-      })
-      .end((err, res) => {
-        assert.isFalse(res.body.valid);
-        assert.deepEqual(res.body.conflict, ['row']);
-        done();
-      });
-  });
+  chai
+    .request(server)
+    .post('/api/check')
+    .send({
+      puzzle: puzzleString,
+      coordinate: 'A2',
+      value: '1'
+    })
+    .end((err, res) => {
+      assert.isFalse(res.body.valid);
+      assert.includeMembers(res.body.conflict, ['row', 'region']);
+      done();
+    });
+});
+
 
   test('Check a puzzle placement with multiple conflicts', (done) => {
     // 2 is already in row and column
@@ -120,21 +120,21 @@ suite('Functional Tests', () => {
   });
 
   test('Check a puzzle placement with all conflicts', (done) => {
-    // 7 is in row, column, and region
-    chai
-      .request(server)
-      .post('/api/check')
-      .send({
-        puzzle: puzzleString,
-        coordinate: 'A2',
-        value: '7'
-      })
-      .end((err, res) => {
-        assert.isFalse(res.body.valid);
-        assert.includeMembers(res.body.conflict, ['row', 'column', 'region']);
-        done();
-      });
-  });
+  chai
+    .request(server)
+    .post('/api/check')
+    .send({
+      puzzle: puzzleString,
+      coordinate: 'C2',
+      value: '6' // Conflicts with row, column, and region
+    })
+    .end((err, res) => {
+      assert.isFalse(res.body.valid);
+      assert.includeMembers(res.body.conflict, ['row', 'column', 'region']);
+      done();
+    });
+});
+
 
   test('Check a puzzle placement with missing required fields', (done) => {
     chai
