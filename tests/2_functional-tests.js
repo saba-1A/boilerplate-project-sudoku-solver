@@ -128,6 +128,23 @@ suite('Functional Tests', () => {
       });
   });
 
+  test('Check a puzzle placement with incorrect length', (done) => {
+  const shortPuzzle = '1.5..2.84..63.12.7.2..5..'; // less than 81 chars
+  chai
+    .request(server)
+    .post('/api/check')
+    .send({
+      puzzle: shortPuzzle,
+      coordinate: 'A2',
+      value: '3'
+    })
+    .end((err, res) => {
+      assert.equal(res.body.error, 'Expected puzzle to be 81 characters long');
+      done();
+    });
+});
+
+
   test('Check a puzzle placement with invalid coordinate', (done) => {
     chai.request(server)
       .post('/api/check')
