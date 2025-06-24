@@ -7,59 +7,45 @@ class SudokuSolver {
   }
 
   coordToIndex(row, column) {
-  const rows = "ABCDEFGHI";
-  const rowIndex = rows.indexOf(row.toUpperCase());
-  return rowIndex * 9 + (parseInt(column) - 1);
-}
-
-
-  findRowNumber(index) {
-    return Math.floor(index / 9);
-  }
-
-  findColNumber(index) {
-    return index % 9;
-  }
-
-  findGridNumber(index) {
-    const row = this.findRowNumber(index);
-    const col = this.findColNumber(index);
-    return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+    const rows = "ABCDEFGHI";
+    const rowIndex = rows.indexOf(row.toUpperCase());
+    return rowIndex * 9 + (parseInt(column) - 1);
   }
 
   checkRowPlacement(puzzle, row, column, value) {
-  const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
-  for (let i = 0; i < 9; i++) {
-    const index = rowIndex * 9 + i;
-    if (puzzle[index] === value) return false;
+    const rowIndex = "ABCDEFGHI".indexOf(row.toUpperCase());
+    const currentIndex = this.coordToIndex(row, column);
+    for (let i = 0; i < 9; i++) {
+      const index = rowIndex * 9 + i;
+      if (puzzle[index] === value && index !== currentIndex) return false;
+    }
+    return true;
   }
-  return true;
-}
 
   checkColPlacement(puzzle, row, column, value) {
-  const colIndex = parseInt(column) - 1; // 🔥 Make sure column is a number
-  const currentIndex = this.coordToIndex(row, parseInt(column)); // 🔥 Same here
-  for (let i = 0; i < 9; i++) {
-    const index = i * 9 + colIndex;
-    if (puzzle[index] === value && index !== currentIndex) return false;
+    const colIndex = parseInt(column) - 1;
+    const currentIndex = this.coordToIndex(row, column);
+    for (let i = 0; i < 9; i++) {
+      const index = i * 9 + colIndex;
+      if (puzzle[index] === value && index !== currentIndex) return false;
+    }
+    return true;
   }
-  return true;
-}
-
 
   checkRegionPlacement(puzzle, row, column, value) {
-  const index = this.coordToIndex(row, column);
-  const startRow = Math.floor(this.findRowNumber(index) / 3) * 3;
-  const startCol = Math.floor(this.findColNumber(index) / 3) * 3;
+    const index = this.coordToIndex(row, column);
+    const startRow = Math.floor(index / 9 / 3) * 3;
+    const startCol = Math.floor((index % 9) / 3) * 3;
 
-  for (let r = 0; r < 3; r++) {
-    for (let c = 0; c < 3; c++) {
-      const i = (startRow + r) * 9 + (startCol + c);
-      if (puzzle[i] === value) return false;
+    const currentIndex = this.coordToIndex(row, column);
+    for (let r = 0; r < 3; r++) {
+      for (let c = 0; c < 3; c++) {
+        const i = (startRow + r) * 9 + (startCol + c);
+        if (puzzle[i] === value && i !== currentIndex) return false;
+      }
     }
+    return true;
   }
-  return true;
-}
 
   solve(puzzle) {
     if (this.validate(puzzle) !== "valid") return "unsolvable";
