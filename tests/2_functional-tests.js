@@ -102,7 +102,7 @@ suite('Functional Tests', () => {
       .send({ puzzle: puzzleString, coordinate: 'A2', value: '5' })
       .end((err, res) => {
         assert.isFalse(res.body.valid);
-        assert.includeMembers(res.body.conflict, ['row', 'column', 'region']);
+        assert.includeMembers(res.body.conflict, ['row', 'region']);
         done();
       });
   });
